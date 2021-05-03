@@ -27,7 +27,7 @@ def nothing_to_return(sql):
     """
     Evaluate if sql statement will return data or not
     """
-    return True if 'CREATE' in sql or 'UPDATE' in sql or 'INSERT' in sql or 'DELETE' in sql else False
+    return 'CREATE' in sql or 'UPDATE' in sql or 'INSERT' in sql or 'DELETE' in sql
 
 
 def execute(info, sql, args=None, return_columns=False):
@@ -46,7 +46,11 @@ def execute(info, sql, args=None, return_columns=False):
             rows = c.fetchall()
 
             # return the column names with the data
-            return tuple([desc[0] for desc in c.description]) + rows if return_columns else rows
+            return (
+                tuple(desc[0] for desc in c.description) + rows
+                if return_columns
+                else rows
+            )
 
 
 def executemany(info, sql, args=None):

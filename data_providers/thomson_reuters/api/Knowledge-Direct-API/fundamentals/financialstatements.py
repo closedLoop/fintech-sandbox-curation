@@ -12,8 +12,8 @@ __all__ = ['parse_json']
 
 
 def convertJsonTuple(jsonData):
-	data = json.loads(jsonData, object_hook=lambda d: namedtuple('data', d.keys())(*d.values()))
-	return data
+	return json.loads(
+	    jsonData, object_hook=lambda d: namedtuple('data', d.keys())(*d.values()))
 
 ##  Company Identifiers Conversion
 ##  -- Convert the jsonData to a Company Identifier
