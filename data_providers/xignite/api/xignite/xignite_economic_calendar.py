@@ -28,7 +28,11 @@ class XigniteEconomicCalendar:
         """
         if date_range:
             url_parameters = {"ReleasedOnStart": date_range[0], "ReleasedOnEnd": date_range[1], "CountryCode": country}
-            formatted_parameters = '&'.join('{0}={1}'.format(key, ''.join([str(var) for var in val])) for key, val in sorted(url_parameters.items()))
+            formatted_parameters = '&'.join(
+                '{0}={1}'.format(key, ''.join(str(var) for var in val))
+                for key, val in sorted(url_parameters.items())
+            )
+
             return "%s?_token=%s&%s" % (self.base_url, self.access_token, formatted_parameters)
 
     def query(self, country, date_range):

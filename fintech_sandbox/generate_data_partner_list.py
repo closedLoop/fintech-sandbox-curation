@@ -25,9 +25,9 @@ def naming_convention(full_name):
 def process_article(html):
     import shutil
     images_dir = WIKI_REPO_DIR + "images/"
-    
+
     soup = BeautifulSoup(html, 'lxml')
-    
+
     elts = soup.findAll('article')
     profiles = []
     for elt in elts:
@@ -36,13 +36,9 @@ def process_article(html):
         text = elt.get_text().strip().splitlines()
         if len(text):
             text = text[0]
-            
-        logo = img.attrs.get('src', None)
-        if logo:
-            img_name = urlparse.urlparse(logo).path.split('/')[-1]
-        else:
-            img_name = None
 
+        logo = img.attrs.get('src', None)
+        img_name = urlparse.urlparse(logo).path.split('/')[-1] if logo else None
         profile = { 
             'logo': logo,
             'img_name': img_name,
@@ -54,13 +50,13 @@ def process_article(html):
         if profile['id'][-1] == '_':
             profile['id'] = profile['id'][:-1]
         profiles.append(profile)
-    
+
     for profile in profiles:
         # Process bio
         rs = requests.get('http://fintechsandbox.org' + profile['link'])
         html = rs.content
         soup = BeautifulSoup(html, 'lxml')
-        
+
         elts = soup.findAll('article')
         title_elt = soup.find(name='h1', attrs={'class':'title'})
         if title_elt:
@@ -68,12 +64,14 @@ def process_article(html):
         desc_elt = soup.find(name='div', attrs={'class':'content'})
         if desc_elt:
             profile.update({'title':desc_elt.text.strip().splitlines()[0]})
-            
+
         # Process External Links
         sidebar_elt = soup.find(name='div', attrs={'class':'sidebar'})
         profile.update({'external_links': [{'url':elt.attrs['href'].strip(), 'text': elt.text.strip() } for elt in sidebar_elt.findAll('a')]})
-        
+
         for l in profile['external_links']:
+            if l['url'].find('fintechsandbox') > -1:
+                continue
             if l['url'].find('mailto:') == 0:
                 profile['email_link'] = l['url']
                 profile['email_text'] = l['text']
@@ -84,12 +82,10 @@ def process_article(html):
                 profile['linkedin'] = l['url']
             elif l['url'].find('twitter') > -1:
                 profile['twitter'] = l['url']
-            elif l['url'].find('fintechsandbox') > -1:
-                pass
             else:
                 profile['website'] = l['url']
-                
-    
+
+
         # Download logo
         rs = requests.get(profile['logo'], stream=True)
         logo_fname = '{}{}.{}'.format(images_dir, profile['id'], profile['logo_type'])
@@ -99,7 +95,7 @@ def process_article(html):
             with open(logo_fname, 'wb') as f:
                 rs.raw.decode_content = True
                 shutil.copyfileobj(rs.raw, f)
-        
+
     import pandas as pd
     df = pd.DataFrame(profiles)
     df['name'] = df['name'].apply(lambda x: x.strip())
@@ -222,7 +218,7 @@ def create_markup_table(df, profile_category):
     
     assert profile_category in ['Sandbox-Members','Data-Providers'], "profile_category must be either 'Sandbox-Members' or 'Data-Providers'"
     #[![Fintech Sandbox Profile](images/thomson_reuters.png)](http://fintechsandbox.org/partner/thomson-reuters)
-    
+
     headings = ['Provider',
                 'Resource Page', 
                 'External Profile', 'Website', 'Email', 'Phone','LinkedIn','Twitter']
@@ -235,19 +231,22 @@ def create_markup_table(df, profile_category):
                 '[![{linkedin}](images/icons/linkedin.png)]({linkedin})',
                 '[![{twitter}](images/icons/twitter.png)]({twitter})'
     ]
-    
 
-    
-     
-    
-    table = ['| ' + ' | '.join(headings) +' |']
-    table.append('|' + '|'.join(['-'*len(h) for h in headings]) +'|')
-    for _, data in df.iterrows():                
-        row = '| ' + ' | '.join([_process_template(t,data) for t in template]) +' |'
+
+
+
+
+    table = [
+        '| ' + ' | '.join(headings) + ' |',
+        '|' + '|'.join('-' * len(h) for h in headings) + '|',
+    ]
+
+    for _, data in df.iterrows():            
+        row = '| ' + ' | '.join(_process_template(t,data) for t in template) + ' |'
         table.append(row)
 
     markup = '\n'.join(table)
-    
+
     with open(WIKI_REPO_DIR + '{}.md'.format(profile_category), 'w') as fh:
         fh.writelines(markup)
     

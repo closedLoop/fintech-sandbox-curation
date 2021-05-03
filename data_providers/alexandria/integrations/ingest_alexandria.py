@@ -59,12 +59,30 @@ def parse_line(line):
 
     default = Sentiment
 
-    args = (Timestamp, default, StoryId, Country, Sentiment, \
-    Confidence, Novelty, Subjects, Relevance, Ticker, Timestamp, \
-    Ticker, Timestamp, default, StoryId, Timestamp, Country, \
-    Sentiment, Confidence, Novelty, Subjects, Relevance)
-
-    return args
+    return (
+        Timestamp,
+        default,
+        StoryId,
+        Country,
+        Sentiment,
+        Confidence,
+        Novelty,
+        Subjects,
+        Relevance,
+        Ticker,
+        Timestamp,
+        Ticker,
+        Timestamp,
+        default,
+        StoryId,
+        Timestamp,
+        Country,
+        Sentiment,
+        Confidence,
+        Novelty,
+        Subjects,
+        Relevance,
+    )
 
 
 def parse(fname):

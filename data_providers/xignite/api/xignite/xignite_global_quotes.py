@@ -29,7 +29,11 @@ class XigniteGlobalQuotes:
         """
         if symbols:
             url_parameters = {"Identifiers": symbols,"IdentifierType": ["Symbol"]}
-            formatted_parameters = '&'.join('{0}={1}'.format(key, ','.join([str(var) for var in val])) for key, val in sorted(url_parameters.items()))
+            formatted_parameters = '&'.join(
+                '{0}={1}'.format(key, ','.join(str(var) for var in val))
+                for key, val in sorted(url_parameters.items())
+            )
+
 
             return "%s?_token=%s&%s" % (self.base_url, self.access_token, formatted_parameters)
 
